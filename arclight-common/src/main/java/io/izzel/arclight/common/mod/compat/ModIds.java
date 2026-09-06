@@ -11,4 +11,6 @@ public class ModIds {
         RADIUM = "radium";
 
     public static final String RECRUITS = "recruits";
+
+    public static final String COBBLEMON = "cobblemon";
 }

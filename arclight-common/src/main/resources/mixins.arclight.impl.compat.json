@@ -1,0 +1,11 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "io.izzel.arclight.common.mixin.compat",
+  "target": "@env(DEFAULT)",
+  "plugin": "io.izzel.arclight.common.mod.ArclightMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "cobblemon.PokemonEntityMixin_Cobblemon"
+  ]
+}

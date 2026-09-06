@@ -24,5 +24,7 @@ public class ArclightConnector implements IMixinConnector {
         LOGGER.info("mixin-load.core");
         Mixins.addConfiguration("mixins.arclight.impl.optimization.json");
         LOGGER.info("mixin-load.optimization");
+        Mixins.addConfiguration("mixins.arclight.impl.compat.json");
+        LOGGER.info("mixin-load.compat");
     }
 }

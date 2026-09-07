@@ -14,7 +14,8 @@
     "mixins.arclight.core.json",
     "mixins.arclight.bukkit.json",
     "mixins.arclight.vanilla.json",
-    "mixins.arclight.impl.optimization.json"
+    "mixins.arclight.impl.optimization.json",
+    "mixins.arclight.impl.compat.json"
   ],
   "depends": {
     "fabricloader": ">=0.16",

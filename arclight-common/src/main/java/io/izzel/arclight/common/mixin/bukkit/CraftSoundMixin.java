@@ -1,10 +1,9 @@
 package io.izzel.arclight.common.mixin.bukkit;
 
+import com.google.common.base.Preconditions;
 import io.izzel.arclight.common.mod.server.ArclightServer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
@@ -26,20 +25,15 @@ public abstract class CraftSoundMixin {
      */
     @Overwrite
     public static Sound minecraftToBukkit(SoundEvent minecraft) {
-        if (minecraft == null) {
-            return Sound.UI_BUTTON_CLICK;
-        }
+        Preconditions.checkArgument(minecraft != null);
+
         Registry<SoundEvent> registry = CraftRegistry.getMinecraftRegistry(Registries.SOUND_EVENT);
-        ResourceLocation location = registry.getResourceKey(minecraft).map(ResourceKey::location).orElse(null);
-        if (location == null) {
-            ArclightServer.LOGGER.debug("No registry key for sound '{}', returning generic fallback sound", minecraft);
-            return Sound.UI_BUTTON_CLICK;
-        }
-        NamespacedKey key = CraftNamespacedKey.fromMinecraft(location);
+        // In case of a bad registered sound we may get an empty optional, that's why we are using orElseThrow
+        NamespacedKey key = CraftNamespacedKey.fromMinecraft(registry.getResourceKey(minecraft).orElseThrow().location());
         Sound bukkit = org.bukkit.Registry.SOUNDS.get(key);
         if (bukkit == null) {
-            ArclightServer.LOGGER.debug("No vanilla Bukkit sound for '{}', returning generic fallback sound", key);
-            return Sound.UI_BUTTON_CLICK;
+            ArclightServer.LOGGER.debug("No vanilla Bukkit sound for '{}', returning fallback sound", key);
+            return Sound.INTENTIONALLY_EMPTY;
         }
         return bukkit;
     }

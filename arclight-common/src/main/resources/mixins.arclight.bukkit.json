@@ -35,6 +35,7 @@
     "CraftRegionAccessorMixin",
     "CraftSchedulerMixin",
     "CraftServerMixin",
+    "CraftSoundMixin",
     "CraftSpawnCategoryMixin",
     "CraftSpellcasterMixin",
     "CraftWorldMixin",

@@ -43,6 +43,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
@@ -661,5 +662,17 @@ public abstract class ServerLevelMixin extends LevelMixin implements ServerLevel
     private Entity arclight$resetTickingPassenger(Entity entity) {
         ArclightCaptures.resetTickingEntity();
         return entity;
+    }
+
+    /**
+     * Vanilla only filters the gradual RAIN_LEVEL_CHANGE / THUNDER_LEVEL_CHANGE ramps by dimension, while the
+     * START_RAINING, STOP_RAINING and the two level changes sent on every rain start/stop transition use the
+     * unfiltered PlayerList#broadcastAll(Packet). Those packets reach every client on the server, so a player
+     * standing in a Multiverse world gets told about the overworld's weather and renders rain for a world that
+     * is not raining. The dimension-filtered overload is used instead, matching what NeoForge already ships.
+     */
+    @Redirect(method = "advanceWeatherCycle", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/players/PlayerList;broadcastAll(Lnet/minecraft/network/protocol/Packet;)V"))
+    private void arclight$scopeWeatherBroadcast(PlayerList playerList, Packet<?> packet) {
+        playerList.broadcastAll(packet, this.dimension());
     }
 }

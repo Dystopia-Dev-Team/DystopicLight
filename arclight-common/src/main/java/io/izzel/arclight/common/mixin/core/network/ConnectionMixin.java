@@ -2,6 +2,8 @@ package io.izzel.arclight.common.mixin.core.network;
 
 import com.mojang.authlib.properties.Property;
 import io.izzel.arclight.common.bridge.core.network.ConnectionBridge;
+import io.izzel.arclight.common.mod.server.ArclightServer;
+import io.netty.channel.ChannelFuture;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import org.spongepowered.asm.mixin.Mixin;
@@ -54,6 +56,13 @@ public class ConnectionMixin implements ConnectionBridge {
     private void arclight$noDisconnectTwiceWarn(CallbackInfo ci) {
         if (disconnectionHandled) {
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "syncAfterConfigurationChange", at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelFuture;syncUninterruptibly()Lio/netty/channel/ChannelFuture;"))
+    private static void arclight$doNotBlockMainThread(ChannelFuture future, CallbackInfo ci) {
+        if (ArclightServer.isPrimaryThread()) {
+            ArclightServer.getMinecraftServer().managedBlock(future::isDone);
         }
     }
 }

@@ -10,6 +10,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
@@ -64,5 +65,10 @@ public class ConnectionMixin implements ConnectionBridge {
         if (ArclightServer.isPrimaryThread()) {
             ArclightServer.getMinecraftServer().managedBlock(future::isDone);
         }
+    }
+
+    @Redirect(method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V", at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelFuture;awaitUninterruptibly()Lio/netty/channel/ChannelFuture;"))
+    private ChannelFuture arclight$skipDisconnectWait(ChannelFuture instance) {
+        return instance; // We can't wait as this may be called from an event loop.
     }
 }

@@ -2,12 +2,15 @@ package io.izzel.arclight.common.mixin.core.network;
 
 import com.mojang.authlib.properties.Property;
 import io.izzel.arclight.common.bridge.core.network.ConnectionBridge;
+import io.izzel.arclight.common.mod.server.ArclightServer;
+import io.netty.channel.ChannelFuture;
 import net.minecraft.network.Connection;
 import net.minecraft.network.DisconnectionDetails;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
@@ -55,5 +58,17 @@ public class ConnectionMixin implements ConnectionBridge {
         if (disconnectionHandled) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "syncAfterConfigurationChange", at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelFuture;syncUninterruptibly()Lio/netty/channel/ChannelFuture;"))
+    private static void arclight$doNotBlockMainThread(ChannelFuture future, CallbackInfo ci) {
+        if (ArclightServer.isPrimaryThread()) {
+            ArclightServer.getMinecraftServer().managedBlock(future::isDone);
+        }
+    }
+
+    @Redirect(method = "disconnect(Lnet/minecraft/network/DisconnectionDetails;)V", at = @At(value = "INVOKE", target = "Lio/netty/channel/ChannelFuture;awaitUninterruptibly()Lio/netty/channel/ChannelFuture;"))
+    private ChannelFuture arclight$skipDisconnectWait(ChannelFuture instance) {
+        return instance; // We can't wait as this may be called from an event loop.
     }
 }
